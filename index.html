@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>오늘 뭐 먹지? 🍽️ 점심 메뉴 추천</title>
+  <!-- 귀여운 한글 웹폰트 (Jua & Pretendard) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Pretendard:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #FFF6B7 0%, #F6416C 100%);
+      --card-bg: #ffffff;
+      --primary: #FF5E5B;
+      --primary-dark: #E04340;
+      --secondary: #FFD166;
+      --accent: #06D6A0;
+      --purple: #8338EC;
+      --text-main: #2B2D42;
+      --text-sub: #6C757D;
+      --border-color: #2B2D42;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #FFF8E7;
+      background-image: 
+        radial-gradient(#FFD166 2px, transparent 2px), 
+        radial-gradient(#FF9F1C 2px, #FFF8E7 2px);
+      background-size: 40px 40px;
+      background-position: 0 0, 20px 20px;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px 16px;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 440px;
+      background: var(--card-bg);
+      border: 4px solid var(--border-color);
+      border-radius: 28px;
+      box-shadow: 0 12px 0 var(--border-color), 0 20px 30px rgba(0, 0, 0, 0.12);
+      padding: 28px 22px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 상단 장식 배지 */
+    .campus-badge {
+      display: inline-block;
+      background: var(--secondary);
+      color: var(--text-main);
+      font-family: 'Jua', sans-serif;
+      font-size: 0.9rem;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 2.5px solid var(--border-color);
+      box-shadow: 0 3px 0 var(--border-color);
+      margin-bottom: 12px;
+      transform: rotate(-2deg);
+    }
+
+    /* 1. 화면 상단 제목 */
+    h1.title {
+      font-family: 'Jua', sans-serif;
+      font-size: 2.6rem;
+      color: var(--primary);
+      text-shadow: 2px 2px 0px var(--border-color);
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      line-height: 1.15;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: var(--text-sub);
+      font-weight: 700;
+      margin-bottom: 22px;
+    }
+
+    /* 2. 음식 종류 선택 영역 */
+    .category-label {
+      font-family: 'Jua', sans-serif;
+      font-size: 1.1rem;
+      color: var(--text-main);
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .category-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .cat-btn {
+      flex: 1 1 calc(33.333% - 8px);
+      min-width: 92px;
+      background: #F8F9FA;
+      border: 3px solid var(--border-color);
+      border-radius: 16px;
+      padding: 10px 8px;
+      font-family: 'Jua', sans-serif;
+      font-size: 1.05rem;
+      color: var(--text-main);
+      cursor: pointer;
+      box-shadow: 0 4px 0 var(--border-color);
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .cat-btn .cat-emoji {
+      font-size: 1.5rem;
+    }
+
+    .cat-btn:hover {
+      transform: translateY(-2px);
+      background: #FFF3CD;
+    }
+
+    .cat-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 var(--border-color);
+    }
+
+    .cat-btn.active {
+      background: var(--secondary);
+      color: var(--text-main);
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 var(--border-color);
+    }
+
+    /* 5. 추천 결과 화면 중앙 박스 */
+    .result-stage {
+      background: #FFF9EC;
+      border: 3.5px dashed var(--border-color);
+      border-radius: 24px;
+      min-height: 210px;
+      padding: 24px 16px;
+      margin-bottom: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+
+    .result-stage.highlight {
+      background: #E8FBF6;
+      border-style: solid;
+      border-color: var(--border-color);
+      box-shadow: inset 0 0 0 4px #06D6A0;
+    }
+
+    .result-category-tag {
+      font-family: 'Jua', sans-serif;
+      font-size: 0.9rem;
+      background: var(--purple);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 2px solid var(--border-color);
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    .result-emoji {
+      font-size: 4rem;
+      line-height: 1.1;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 4px 4px rgba(0,0,0,0.1));
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .result-name {
+      font-family: 'Jua', sans-serif;
+      font-size: 2.3rem;
+      color: var(--text-main);
+      word-break: keep-all;
+      line-height: 1.2;
+      margin-bottom: 8px;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .result-desc {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--primary);
+      background: #fff;
+      padding: 6px 14px;
+      border-radius: 12px;
+      border: 2px solid var(--border-color);
+      max-width: 95%;
+      word-break: keep-all;
+    }
+
+    /* 애니메이션 효과 */
+    @keyframes popBounce {
+      0% { transform: scale(0.6) rotate(-5deg); opacity: 0.5; }
+      60% { transform: scale(1.12) rotate(2deg); opacity: 1; }
+      80% { transform: scale(0.95) rotate(-1deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    @keyframes shakeSlot {
+      0%, 100% { transform: translateY(0); }
+      25% { transform: translateY(-6px) rotate(-2deg); }
+      75% { transform: translateY(6px) rotate(2deg); }
+    }
+
+    .pop-anim {
+      animation: popBounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .slot-anim {
+      animation: shakeSlot 0.12s infinite;
+    }
+
+    /* 3 & 6. 추천 버튼 및 다시 추천 버튼 영역 */
+    .action-area {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .main-btn {
+      width: 100%;
+      background: var(--primary);
+      color: #ffffff;
+      border: 3.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 16px 20px;
+      font-family: 'Jua', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 0 6px 0 var(--border-color);
+      transition: all 0.15s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .main-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 var(--border-color);
+    }
+
+    .main-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 var(--border-color);
+    }
+
+    .retry-btn {
+      width: 100%;
+      background: var(--accent);
+      color: var(--text-main);
+      border: 3.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 15px 20px;
+      font-family: 'Jua', sans-serif;
+      font-size: 1.4rem;
+      cursor: pointer;
+      box-shadow: 0 6px 0 var(--border-color);
+      transition: all 0.15s ease;
+      display: none; /* 첫 추천 전에는 숨김 */
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .retry-btn:hover {
+      filter: brightness(1.05);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 var(--border-color);
+    }
+
+    .retry-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 var(--border-color);
+    }
+
+    /* 이모지 폭죽 효과 */
+    .confetti-piece {
+      position: fixed;
+      font-size: 1.8rem;
+      pointer-events: none;
+      z-index: 9999;
+      animation: fallDown 1.2s ease-out forwards;
+    }
+
+    @keyframes fallDown {
+      0% {
+        transform: translate(0, 0) scale(0.5) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--tx), var(--ty)) scale(1.3) rotate(var(--rot));
+        opacity: 0;
+      }
+    }
+
+    .footer-tip {
+      margin-top: 18px;
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      font-weight: 700;
+    }
+
+    /* 스마트폰 작은 화면 대응 */
+    @media (max-width: 380px) {
+      h1.title {
+        font-size: 2.2rem;
+      }
+      .result-name {
+        font-size: 1.9rem;
+      }
+      .cat-btn {
+        min-width: 80px;
+        font-size: 0.95rem;
+        padding: 8px 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="app-container">
+    <div class="campus-badge">🎓 공강 시간 최대의 난제 해결사!</div>
+    <h1 class="title">오늘 뭐 먹지?</h1>
+    <p class="subtitle">고민은 짧게, 점심은 맛있게! 종류를 골라봐 👇</p>
+
+    <!-- 2. 음식 종류 선택 버튼 -->
+    <span class="category-label">🍽️ 먹고 싶은 종류 선택</span>
+    <div class="category-grid" role="radiogroup" aria-label="음식 종류 선택">
+      <button type="button" class="cat-btn active" data-category="한식">
+        <span class="cat-emoji">🍚</span>
+        <span>한식</span>
+      </button>
+      <button type="button" class="cat-btn" data-category="중식">
+        <span class="cat-emoji">🥟</span>
+        <span>중식</span>
+      </button>
+      <button type="button" class="cat-btn" data-category="일식">
+        <span class="cat-emoji">🍣</span>
+        <span>일식</span>
+      </button>
+      <button type="button" class="cat-btn" data-category="양식">
+        <span class="cat-emoji">🍕</span>
+        <span>양식</span>
+      </button>
+      <button type="button" class="cat-btn" data-category="아무거나">
+        <span class="cat-emoji">🎲</span>
+        <span>아무거나</span>
+      </button>
+    </div>
+
+    <!-- 5. 추천된 음식 이름을 화면 중앙에 크고 재미있게 표시 -->
+    <section class="result-stage" id="resultStage" aria-live="polite">
+      <span class="result-category-tag" id="resultTag">한식</span>
+      <div class="result-emoji" id="resultEmoji">🤔</div>
+      <div class="result-name" id="resultName">버튼을 눌러봐!</div>
+      <div class="result-desc" id="resultDesc">오늘의 운명적인 점심 메뉴는?</div>
+    </section>
+
+    <!-- 3 & 6. 메뉴 추천! / 다시 추천 버튼 -->
+    <div class="action-area">
+      <button type="button" class="main-btn" id="recommendBtn">
+        <span>🎰 메뉴 추천!</span>
+      </button>
+      <button type="button" class="retry-btn" id="retryBtn">
+        <span>🔄 다시 추천</span>
+      </button>
+    </div>
+
+    <p class="footer-tip">💡 마음에 들 때까지 눌러도 학점은 안 깎여요!</p>
+  </main>
+
+  <script>
+    // 카테고리별 대학생 인기 점심 메뉴 데이터
+    const MENU_DATA = {
+      "한식": [
+        { name: "돼지김치찌개 + 계란말이", emoji: "🥘", desc: "한국인은 역시 얼큰한 김치찌개에 공깃밥 두 그릇!" },
+        { name: "제육볶음 정식", emoji: "🥩", desc: "실패 확률 0%! 상추에 크게 한 쌈 싸먹자!" },
+        { name: "순대국밥 (특)", emoji: "🍲", desc: "든든함 끝판왕! 오후 전공 수업도 거뜬해!" },
+        { name: "치즈 닭갈비", emoji: "🐔", desc: "매콤달콤 닭갈비에 다 먹고 볶음밥은 국룰!" },
+        { name: "차돌 된장찌개", emoji: "🫕", desc: "구수하고 진한 국물에 밥 비벼 먹으면 꿀맛!" },
+        { name: "돌솥비빔밥", emoji: "🥗", desc: "지글지글 누룽지까지 싹싹 긁어먹는 재미!" },
+        { name: "해물 순두부찌개", emoji: "🌶️", desc: "보들보들 순두부에 날계란 톡! 속이 확 풀려~" },
+        { name: "삼겹살 + 냉면", emoji: "🥓", desc: "낮삼겹이 진짜배기! 오늘 점심은 플렉스하자!" },
+        { name: "즉석 떡볶이 & 튀김", emoji: "🍢", desc: "분식집 감성 충만! 김말이 국물에 푹 찍어먹자!" },
+        { name: "육회비빔밥", emoji: "🥩", desc: "신선하고 고소한 육회 듬뿍! 기분 전환 메뉴!" }
+      ],
+      "중식": [
+        { name: "간짜장 + 탕수육 세트", emoji: "🍜", desc: "부먹 찍먹 싸우지 말고 일단 시키고 보자!" },
+        { name: "마라탕 (2단계)", emoji: "🌶️", desc: "스트레스 쌓일 땐 얼얼한 마라 수혈이 정답!" },
+        { name: "차돌 짬뽕", emoji: "🦑", desc: "불향 가득 얼큰한 국물에 차돌박이가 듬뿍!" },
+        { name: "마라샹궈 & 계란볶음밥", emoji: "🥘", desc: "매콤짭짤 마라샹궈에 고슬고슬 볶음밥 조합!" },
+        { name: "새우 볶음밥 & 짜장소스", emoji: "🍤", desc: "탱글탱글 새우에 계란국 한 입이면 천국!" },
+        { name: "꿔바로우 & 짬뽕", emoji: "🍖", desc: "쫀득바삭 새콤달콤 꿔바로우는 못 참지!" },
+        { name: "유린기 정식", emoji: "🍗", desc: "바삭한 닭고기에 청양고추 간장소스가 찰떡!" }
+      ],
+      "일식": [
+        { name: "치즈 돈까스", emoji: "🧀", desc: "쭈욱 늘어나는 모짜렐라 치즈에 경양식 소스 듬뿍!" },
+        { name: "연어 초밥 세트", emoji: "🍣", desc: "입에서 사르르 녹는 부드러운 연어 초밥!" },
+        { name: "돈코츠 라멘", emoji: "🍜", desc: "진한 돼지뼈 육수에 반숙 계란 추가는 필수!" },
+        { name: "가츠동 (돈까스덮밥)", emoji: "🍱", desc: "단짠단짠 소스에 촉촉한 계란과 바삭한 돈까스!" },
+        { name: "사케동 (연어덮밥)", emoji: "🐟", desc: "두툼한 생연어에 와사비 살짝 올려 한 입!" },
+        { name: "냉모밀 & 새우튀김", emoji: "🥢", desc: "살얼음 동동 시원한 국물에 바삭한 튀김 조합!" },
+        { name: "일본식 카레라이스", emoji: "🍛", desc: "진한 카레에 가라아게나 고로케 토핑 추가!" },
+        { name: "마제소바", emoji: "🍜", desc: "비벼 먹고 남은 양념에 서비스 밥까지 야무지게!" }
+      ],
+      "양식": [
+        { name: "수제 치즈버거 세트", emoji: "🍔", desc: "육즙 가득 패티에 감자튀김, 콜라 한 모금 캬!" },
+        { name: "베이컨 까르보나라", emoji: "🍝", desc: "꾸덕꾸덕 고소한 크림 파스타로 기분 업!" },
+        { name: "페퍼로니 피자", emoji: "🍕", desc: "친구들이랑 나눠 먹기 딱 좋은 짭조름 피자!" },
+        { name: "쉬림프 로제 파스타", emoji: "🦐", desc: "토마토와 크림의 황금비율! 통통한 새우까지!" },
+        { name: "치킨 시저 샐러드 & 파니니", emoji: "🥪", desc: "가볍지만 든든하고 브런치 카페 느낌 물씬!" },
+        { name: "목살 필라프", emoji: "🍳", desc: "불향 가득 볶음밥 위에 반숙 계란후라이 톡!" },
+        { name: "해물 토마토 리조또", emoji: "🍅", desc: "상큼하고 진한 토마토 소스가 밥알에 쏙쏙!" }
+      ]
+    };
+
+    let selectedCategory = "한식";
+    let lastPickedName = "";
+    let isAnimating = false;
+
+    const categoryButtons = document.querySelectorAll(".cat-btn");
+    const resultStage = document.getElementById("resultStage");
+    const resultTag = document.getElementById("resultTag");
+    const resultEmoji = document.getElementById("resultEmoji");
+    const resultName = document.getElementById("resultName");
+    const resultDesc = document.getElementById("resultDesc");
+    const recommendBtn = document.getElementById("recommendBtn");
+    const retryBtn = document.getElementById("retryBtn");
+
+    // 카테고리 버튼 클릭 이벤트
+    categoryButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        categoryButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedCategory = btn.dataset.category;
+      });
+    });
+
+    // 선택한 카테고리에 맞는 메뉴 풀 가져오기
+    function getMenuPool(category) {
+      if (category === "아무거나") {
+        let allMenus = [];
+        Object.keys(MENU_DATA).forEach((cat) => {
+          MENU_DATA[cat].forEach((item) => {
+            allMenus.push({ ...item, category: cat });
+          });
+        });
+        return allMenus;
+      } else {
+        return MENU_DATA[category].map((item) => ({ ...item, category }));
+      }
+    }
+
+    // 이모지 폭죽 효과
+    function launchConfetti(emoji) {
+      const emojis = [emoji, "✨", "🎉", "🍴", "👍"];
+      const rect = resultStage.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      for (let i = 0; i < 14; i++) {
+        const span = document.createElement("span");
+        span.className = "confetti-piece";
+        span.textContent = emojis[i % emojis.length];
+        span.style.left = `${centerX}px`;
+        span.style.top = `${centerY}px`;
+
+        const angle = (Math.PI * 2 * i) / 14 + (Math.random() - 0.5) * 0.5;
+        const distance = 90 + Math.random() * 100;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance - 30;
+        const rot = (Math.random() - 0.5) * 360;
+
+        span.style.setProperty("--tx", `${tx}px`);
+        span.style.setProperty("--ty", `${ty}px`);
+        span.style.setProperty("--rot", `${rot}deg`);
+
+        document.body.appendChild(span);
+        setTimeout(() => span.remove(), 1200);
+      }
+    }
+
+    // 메뉴 추천 실행 함수 (재미있는 룰렛 연출 포함)
+    function pickRandomMenu() {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      const pool = getMenuPool(selectedCategory);
+      // 직전 메뉴와 겹치지 않도록 필터링
+      const candidates = pool.length > 1
+        ? pool.filter((item) => item.name !== lastPickedName)
+        : pool;
+
+      const finalChoice = candidates[Math.floor(Math.random() * candidates.length)];
+      lastPickedName = finalChoice.name;
+
+      // 룰렛 돌아가는 듯한 짧은 연출 (약 0.35초)
+      resultStage.classList.remove("highlight");
+      resultEmoji.classList.add("slot-anim");
+      resultName.classList.remove("pop-anim");
+      resultTag.style.display = "none";
+
+      let ticks = 0;
+      const maxTicks = 5;
+      const interval = setInterval(() => {
+        const tempItem = pool[Math.floor(Math.random() * pool.length)];
+        resultEmoji.textContent = tempItem.emoji;
+        resultName.textContent = tempItem.name;
+        resultDesc.textContent = "두구두구... 골라보는 중! 🥁";
+        ticks++;
+
+        if (ticks >= maxTicks) {
+          clearInterval(interval);
+          resultEmoji.classList.remove("slot-anim");
+
+          // 최종 추천 결과 표시
+          resultTag.textContent = `오늘의 ${finalChoice.category} 픽!`;
+          resultTag.style.display = "inline-block";
+          resultEmoji.textContent = finalChoice.emoji;
+          resultName.textContent = finalChoice.name;
+          resultDesc.textContent = finalChoice.desc;
+
+          resultStage.classList.add("highlight");
+          void resultName.offsetWidth; // reflow
+          resultName.classList.add("pop-anim");
+
+          // 다시 추천 버튼 표시
+          retryBtn.style.display = "flex";
+
+          // 폭죽 이펙트
+          launchConfetti(finalChoice.emoji);
+          isAnimating = false;
+        }
+      }, 65);
+    }
+
+    recommendBtn.addEventListener("click", pickRandomMenu);
+    retryBtn.addEventListener("click", pickRandomMenu);
+  </script>
+</body>
+</html>
